@@ -198,5 +198,29 @@ namespace mnserver.Controllers
             // Əgər ModelState.IsValid deyilsə (məlumatlar Modelə uyğun gəlmirsə)
             return BadRequest(ModelState);
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            if (ModelState.IsValid)
+            {
+                var client = await _context.Client.FindAsync(id);
+
+                if (client == null)
+                {
+                    // Silinəcək obyekt tapılmadıqda 404 Not Found qaytarırıq.
+                    return NotFound();
+                }
+
+                _context.Client.Remove(client);
+                await _context.SaveChangesAsync();
+
+                // Uğurlu silinmədən sonra 204 No Content qaytarmaq RESTful API standartıdır.
+                // Çünki silinmədən sonra cavab body-də heç bir məlumat gözlənilmir.
+                return NoContent();
+            }
+            return BadRequest(ModelState);
+        }
+
     }
 }

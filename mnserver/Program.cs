@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using mnserver.Data;
 
 namespace mnserver
@@ -17,10 +17,29 @@ namespace mnserver
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
-            using (var scope = app.Services.CreateScope())
+            /*using (var scope = app.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 db.Database.Migrate();
+            }*/
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+
+                try
+                {
+                    // AppDbContext-i servislərdən götür
+                    var dbContext = services.GetRequiredService<AppDbContext>();
+
+                    // Bu sətir bütün Miqrasiyaları həyata keçirir və cədvəlləri yaradır!
+                    dbContext.Database.Migrate();
+                }
+                catch (Exception ex)
+                {
+                    // Xəta olarsa, logda göstər
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "An error occurred during migration.");
+                }
             }
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
